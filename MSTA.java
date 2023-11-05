@@ -113,6 +113,9 @@ class Graph {
 
 public class MSTA {
 
+    static ArrayList<Edge> originalEdges = new ArrayList<>();
+    static ArrayList<Edge> resultEdges = new ArrayList<>();
+
     // Função para verificar a presença de ciclos negativos usando Bellman-Ford
     static boolean hasNegativeCycles(int source, Graph g) {
         int[] dist = new int[g.getV()];
@@ -145,6 +148,20 @@ public class MSTA {
         }
 
         return false; // Não há ciclos negativos
+    }
+
+    public Edge findMinimumIncomingEdge(int vertex, Graph g) {
+        Edge minimumEdge = null;
+
+        for (Edge edge : g.getEdges()) {
+            if (edge.dest.id == vertex) {
+                if (minimumEdge == null || edge.weight < minimumEdge.weight) {
+                    minimumEdge = edge;
+                }
+            }
+        }
+
+        return minimumEdge;
     }
 
     public static Map<Integer, Edge> findMinimumCycle(int source, Graph g) {
@@ -218,7 +235,6 @@ public class MSTA {
                 int dest = edge.dest.id;
                 int weight = edge.weight;
 
-
                 if (cicloMinimo.containsKey(src)) {
                     src = cicloMinimo.values().iterator().next().src.id;
                 }
@@ -231,42 +247,25 @@ public class MSTA {
                     weight -= cicloMinimo.get(src).weight;
                 }
 
-                if(!(cicloMinimo.containsKey(src)&&cicloMinimo.containsKey(dest))) reducedGraph.addEdge(src, dest, weight);
+                if (!(cicloMinimo.containsKey(src) && cicloMinimo.containsKey(dest)))
+                    reducedGraph.addEdge(src, dest, weight);
             }
         }
 
         return reducedGraph;
     }
 
-    public static Graph reduceGraph(Graph g, Map<Integer, Edge> ciclo_minimo) {
-        Graph G_reduzido = new Graph(g.getV());
+    public static List<Integer> Edmonds(Graph g, int r, Graph result, Graph origin, boolean isFirstTime) {
 
-        for (int v = 0; v < g.getV(); v++) {
-            if (!ciclo_minimo.containsKey(v)) {
-                G_reduzido.addAdj(v);
-            }
+        // System.out.println(isFirstTime);
+
+        if(isFirstTime) {
+            for (Edge e : g.getEdges()) {
+            System.out.print(e.src.id + "->" + e.dest.id + "(" + e.weight + ")");
+            System.out.println();
+            originalEdges.add(e);
         }
-
-        for (Edge e : g.getEdges()) {
-            if (!ciclo_minimo.containsKey(e.src.id) && !ciclo_minimo.containsKey(e.dest.id)) {
-                G_reduzido.addEdge(e.src, e.dest, e.weight);
-            }
         }
-
-        for (Integer v : ciclo_minimo.keySet()) {
-            G_reduzido.addAdj(v);
-        }
-
-        for (Edge e : ciclo_minimo.values()) {
-            if (e.src != e.dest) {
-                G_reduzido.addEdge(e.src, e.dest, e.weight);
-            }
-        }
-
-        return G_reduzido;
-    }
-
-    public static List<Integer> Edmonds(Graph g, int r, Graph result, Graph origin) {
 
         System.out.println(g.getV());
 
@@ -275,6 +274,7 @@ public class MSTA {
             System.out.println();
 
         }
+        isFirstTime= false;
         System.out.println();
 
         Map<Integer, Edge> cycle = findMinimumCycle(r, g);
@@ -287,23 +287,21 @@ public class MSTA {
 
         Graph redGraph = reduceGraph(cycle, g);
 
-        //System.out.println(redGraph.getV() + "redsize");
+        // System.out.println(redGraph.getV() + "redsize");
 
-        System.out.println(redGraph.getEdges().size()+"e-size");
+        System.out.println(redGraph.getEdges().size() + "e-size");
 
-         for (Edge e : redGraph.getEdges()) {
+        for (Edge e : redGraph.getEdges()) {
             System.out.print(e.src.id + "->" + e.dest.id + "(" + e.weight + ")");
             System.out.println();
-
         }
-        //System.out.println("e-size");
-
+        // System.out.println("e-size");
 
         List<Integer> redResult;
 
         if (redGraph.getV() > 1) {
             // System.out.println(redGraph.getV()+"size");
-            redResult = Edmonds(redGraph, redGraph.getEdges().get(0).src.id, result,origin);
+            redResult = Edmonds(redGraph, redGraph.getEdges().get(0).src.id, result, origin, isFirstTime);
         } else {
             redResult = new ArrayList<>();
             redResult.add(r);
@@ -313,8 +311,8 @@ public class MSTA {
 
         // List<Integer> resultVertices = new ArrayList<>();
         // for (Map.Entry<Integer, Integer> entry : result.entrySet()) {
-        //     resultVertices.add(entry.getKey());
-        //     resultVertices.add(entry.getValue());
+        // resultVertices.add(entry.getKey());
+        // resultVertices.add(entry.getValue());
         // }
 
         System.out.println("---");
@@ -322,29 +320,50 @@ public class MSTA {
         for (Edge e : g.getEdges()) {
             System.out.print(e.src.id + "->" + e.dest.id + "(" + e.weight + ")");
             System.out.println();
-
         }
-        System.out.println("---");
 
-        //return resultVertices;
-
-         return null;
-    }
-
-    static Map<Integer, Integer> ReconstructMSTA(List<Integer> result_reduzido, Map<Integer, Edge> ciclo_minimo,
-            int raiz) {
-        Map<Integer, Integer> result = new HashMap<>();
-
-        for (int v : result_reduzido) {
-            if (ciclo_minimo.keySet().contains(v)) {
-                result.put(v, raiz);
-            } else {
-                result.put(v, v);
+        int minWeight = Integer.MAX_VALUE;
+        Vertex minWeightDest = null;
+        for (Edge e : g.getEdges()) {
+            if (e.weight < minWeight) {
+                minWeight = e.weight;
+                minWeightDest = e.dest;
             }
         }
 
-        return result;
+        System.out.println("aresta de menor peso " + minWeight + " tem o vertice de destino " + minWeightDest.id);
+
+
+        System.out.println("---");
+
+
+        System.out.println("aresta original");
+        for (Edge e : originalEdges) {
+            if(e.weight == minWeight && e.dest.id == minWeightDest.id) {
+                System.out.println(e.src.id + "->" + e.dest.id + "(" + e.weight + ")");
+                resultEdges.add(e);
+            }
+        }
+
+        // return resultVertices;
+
+        return null;
     }
+
+    // static Map<Integer, Integer> ReconstructMSTA(List<Integer> result_reduzido, Map<Integer, Edge> ciclo_minimo,
+    //         int raiz) {
+    //     Map<Integer, Integer> result = new HashMap<>();
+
+    //     for (int v : result_reduzido) {
+    //         if (ciclo_minimo.keySet().contains(v)) {
+    //             result.put(v, raiz);
+    //         } else {
+    //             result.put(v, v);
+    //         }
+    //     }
+
+    //     return result;
+    // }
 
     public static void main(String[] args) {
         int V = 4; // Número de vértices
@@ -363,16 +382,18 @@ public class MSTA {
 
         Graph res = new Graph(V);
 
-        List<Integer> result = Edmonds(graph, source, res, graph);
+        boolean isFirstTime = true;
 
-        if (result == null) {
-            System.out.println("Sem Solução");
-        } else {
+        List<Integer> result = Edmonds(graph, source, res, graph, isFirstTime);
+
+        // if (result == null) {
+        //     System.out.println("Sem Solução");
+        // } else {
             System.out.println("Resultado da MSTA:");
-            for (int vertex : result) {
-                System.out.print(vertex + " ");
+            for (Edge e : resultEdges) {
+                System.out.println(e.src.id + "->" + e.dest.id + " (" + e.weight + ")");
             }
-        }
+        // }
     }
 
 }

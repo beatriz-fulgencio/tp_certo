@@ -257,7 +257,7 @@ public class MSTA {
 
     public static List<Integer> Edmonds(Graph g, int r, Graph result, Graph origin, boolean isFirstTime) {
 
-        // System.out.println(isFirstTime);
+        System.out.println("isFirstTime: " + isFirstTime);
 
         if(isFirstTime) {
             for (Edge e : g.getEdges()) {
@@ -267,12 +267,11 @@ public class MSTA {
         }
         }
 
-        System.out.println(g.getV());
+        System.out.println("vertices: " + g.getV());
 
         for (Edge e : g.getEdges()) {
             System.out.print(e.src.id + "->" + e.dest.id + "(" + e.weight + ")");
             System.out.println();
-
         }
         isFirstTime= false;
         System.out.println();
@@ -366,7 +365,7 @@ public class MSTA {
     // }
 
     public static void main(String[] args) {
-        int V = 4; // Número de vértices
+        int V = 5; // Número de vértices
         Graph graph = new Graph(V);
 
         // Adicione arestas ao grafo
@@ -377,14 +376,16 @@ public class MSTA {
         graph.addEdge(2, 0, 1);
         graph.addEdge(3, 1, 4);
         graph.addEdge(2, 3, 2);
+        // graph.addEdge(3, 2, 5);
+        // graph.addEdge(4, 2, 5);
 
         int source = 0;
 
-        Graph res = new Graph(V);
+        Graph res = new Graph(graph.getEdges().size());
 
         boolean isFirstTime = true;
 
-        List<Integer> result = Edmonds(graph, source, res, graph, isFirstTime);
+        Edmonds(graph, source, res, graph, isFirstTime);
 
         // if (result == null) {
         //     System.out.println("Sem Solução");

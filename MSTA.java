@@ -259,12 +259,12 @@ public class MSTA {
 
         System.out.println("isFirstTime: " + isFirstTime);
 
-        if(isFirstTime) {
+        if (isFirstTime) {
             for (Edge e : g.getEdges()) {
-            System.out.print(e.src.id + "->" + e.dest.id + "(" + e.weight + ")");
-            System.out.println();
-            originalEdges.add(e);
-        }
+                System.out.print(e.src.id + "->" + e.dest.id + "(" + e.weight + ")");
+                System.out.println();
+                originalEdges.add(e);
+            }
         }
 
         System.out.println("vertices: " + g.getV());
@@ -273,7 +273,7 @@ public class MSTA {
             System.out.print(e.src.id + "->" + e.dest.id + "(" + e.weight + ")");
             System.out.println();
         }
-        isFirstTime= false;
+        isFirstTime = false;
         System.out.println();
 
         Map<Integer, Edge> cycle = findMinimumCycle(r, g);
@@ -332,15 +332,23 @@ public class MSTA {
 
         System.out.println("aresta de menor peso " + minWeight + " tem o vertice de destino " + minWeightDest.id);
 
-
         System.out.println("---");
-
 
         System.out.println("aresta original");
         for (Edge e : originalEdges) {
-            if(e.weight == minWeight && e.dest.id == minWeightDest.id) {
-                System.out.println(e.src.id + "->" + e.dest.id + "(" + e.weight + ")");
-                resultEdges.add(e);
+            if (e.weight == minWeight && e.dest.id == minWeightDest.id) {
+                // Verifique se a aresta não está em resultEdges antes de adicioná-la
+                boolean alreadyExists = false;
+                for (Edge resultEdge : resultEdges) {
+                    if (resultEdge.src.id == e.src.id && resultEdge.dest.id == e.dest.id) {
+                        alreadyExists = true;
+                        break;
+                    }
+                }
+                if (!alreadyExists) {
+                    System.out.println(e.src.id + "->" + e.dest.id + "(" + e.weight + ")");
+                    resultEdges.add(e);
+                }
             }
         }
 
@@ -349,23 +357,24 @@ public class MSTA {
         return null;
     }
 
-    // static Map<Integer, Integer> ReconstructMSTA(List<Integer> result_reduzido, Map<Integer, Edge> ciclo_minimo,
-    //         int raiz) {
-    //     Map<Integer, Integer> result = new HashMap<>();
+    // static Map<Integer, Integer> ReconstructMSTA(List<Integer> result_reduzido,
+    // Map<Integer, Edge> ciclo_minimo,
+    // int raiz) {
+    // Map<Integer, Integer> result = new HashMap<>();
 
-    //     for (int v : result_reduzido) {
-    //         if (ciclo_minimo.keySet().contains(v)) {
-    //             result.put(v, raiz);
-    //         } else {
-    //             result.put(v, v);
-    //         }
-    //     }
+    // for (int v : result_reduzido) {
+    // if (ciclo_minimo.keySet().contains(v)) {
+    // result.put(v, raiz);
+    // } else {
+    // result.put(v, v);
+    // }
+    // }
 
-    //     return result;
+    // return result;
     // }
 
     public static void main(String[] args) {
-        int V = 5; // Número de vértices
+        int V = 4; // Número de vértices
         Graph graph = new Graph(V);
 
         // Adicione arestas ao grafo
@@ -376,8 +385,6 @@ public class MSTA {
         graph.addEdge(2, 0, 1);
         graph.addEdge(3, 1, 4);
         graph.addEdge(2, 3, 2);
-        // graph.addEdge(3, 2, 5);
-        // graph.addEdge(4, 2, 5);
 
         int source = 0;
 
@@ -388,12 +395,12 @@ public class MSTA {
         Edmonds(graph, source, res, graph, isFirstTime);
 
         // if (result == null) {
-        //     System.out.println("Sem Solução");
+        // System.out.println("Sem Solução");
         // } else {
-            System.out.println("Resultado da MSTA:");
-            for (Edge e : resultEdges) {
-                System.out.println(e.src.id + "->" + e.dest.id + " (" + e.weight + ")");
-            }
+        System.out.println("Resultado da MSTA:");
+        for (Edge e : resultEdges) {
+            System.out.println(e.src.id + "->" + e.dest.id + " (" + e.weight + ")");
+        }
         // }
     }
 
